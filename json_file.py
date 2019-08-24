@@ -44,6 +44,12 @@ class JsonHandler:
             else:
                 return False
 
+    def show(self):
+        with open('customer_list.json', "r") as f:
+            data=json.load(f)
+            #print(data)
+            return data
+
 
     def add(self, dictionary):
         if not os.path.isfile('customer_list.json'): 

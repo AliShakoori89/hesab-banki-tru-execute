@@ -25,10 +25,13 @@ class DepositForm(tk.Frame):
     def deposit(self, id_field, sheet_field):
         sheet=sheet_field.get()
         sheet=int(sheet)
-        JsonHandler.add_sheets(self, id_field.get(), sheet)
-        if JsonHandler.add_sheets(self, id_field.get(), sheet)==True:
+        id_search=id_field.get()
+        
+        if JsonHandler.open_search(self, id_search):
+            list_dic=JsonHandler.open_search(self, id_search)
+            JsonHandler.add_sheets(self, list_dic,id_search,sheet)
             showinfo("notification box", "successfully operation")
-        if JsonHandler.add_sheets(self, id_field.get(), sheet)==False:
+        else:
             showinfo("notification box", "failed operation because customer not found ")
 
 class DumpForm(tk.Frame):
@@ -52,12 +55,15 @@ class DumpForm(tk.Frame):
     def dump(self,id_field,sheet_field):
         sheet=sheet_field.get()
         sheet=int(sheet)
-        JsonHandler.sub_sheets(self,id_field.get(),sheet)
-        if JsonHandler.sub_sheets(self, id_field.get(), sheet)==True:
-            showinfo("notification box", "successfully operation")
-        if JsonHandler.sub_sheets(self, id_field.get(), sheet)==False:
+        id_search=id_field.get()
+        if JsonHandler.open_search(self, id_search):
+            list_dic=JsonHandler.open_search(self, id_search)
+            if JsonHandler.sub_sheets(self,list_dic,id_search,sheet):
+                showinfo("notification box", "successfully operation")
+            else:
+                showinfo("notification box", "failed operation because not enough money ")
+        else:
             showinfo("notification box", "failed operation because customer not found ")
-
 
 class WithdrawForm(tk.Frame):
     def __init__(self,master,**kwargs):
@@ -73,15 +79,23 @@ class WithdrawForm(tk.Frame):
         Button(withdraw_window,text="withdraw",command=account_withdraw_action_with_arg).place(x=10,y=60)
 
     def withdraw(self,id_field):
-        JsonHandler.withdraw(self,id_field.get())
-        print(JsonHandler.withdraw(self,id_field.get()))
-        if JsonHandler.withdraw(self,id_field.get())==True:
+        id_search=id_field.get()
+        if JsonHandler.open_search(self,id_search):
+            list_dic=JsonHandler.open_search(self, id_search)
+            JsonHandler.withdraw(self, list_dic,id_search)
             showinfo("notification box", "successfully operation")
-        # if JsonHandler.withdraw(self,id_field.get())==False:
-        #     showinfo("notification box", "failed operation because customer not found ")
+        else:
+            showinfo("notification box", "failed operation because customer not found ")
 
-
-
+class ShowForm(tk.Frame):
+    def __init__(self,master,**kwargs):
+        self.master=master
+        tk.Frame.__init__(self,self.master,**kwargs)
+        show_window = tk.Toplevel(self.master)
+        show_window.title("show box")
+        list_name=JsonHandler.show(self)
+        print(list_name)
+        Label(show_window,text=list_name).grid()
 
 def create_deposit_window(args, master=None):
     main_gui = DepositForm(master)
@@ -92,6 +106,8 @@ def create_dump_window(args,master=None):
 def create_withdraw_window(args, master=None):
     main_gui = WithdrawForm(master)
 
+def create_show_list(args,master=None):
+    main_gui = ShowForm(master)
 
 class MainGUI:
     master = tk.Tk()
@@ -128,8 +144,31 @@ class MainGUI:
     supply_label.grid(row=4, column=0, sticky=W)
 
     def add_button(self, name_field, last_name_field, id_field, bank_account_field, supply_field):
-        data_dict = {id_field.get():{'name': name_field.get(), 'lastname': last_name_field.get(), 'id': id_field.get(),
-                    'bank_account': bank_account_field.get(), 'supply': int(supply_field.get())}}
+ 
+        try:
+            id_field=int(id_field.get())
+        except ValueError:
+            showinfo("notification box", "please input true data type and enter ID number again")
+        try:
+            name_field=str(name_field.get())
+        except ValueError:
+            showinfo("notification box", "please input true data type and enter name again")
+        try:
+            last_name_field=str(last_name_field.get())
+        except ValueError:
+            showinfo("notification box", "please input true data type and enter lastname again")
+        try:
+            bank_account_field=int(bank_account_field.get())
+        except ValueError:
+            showinfo("notification box", "please input true data type and enter bank account number again ")
+        try:
+            supply_field=int(supply_field.get())
+        except ValueError:
+            showinfo("notification box", "please input true data type and enter supply again")
+
+        data_dict = {id_field:{'name': name_field, 'lastname': last_name_field, 'id': id_field,
+                'bank_account': bank_account_field, 'supply': int(supply_field)}}
+
         JsonHandler.add(self, data_dict)
 
 
@@ -147,6 +186,9 @@ class MainGUI:
     create_withdraw_window_action_with_arg = partial(create_withdraw_window,master)
     Button(master, text="Withdraw", command=create_withdraw_window_action_with_arg).place(x=143,y=145)
 
+    create_show_window_action_with_arg = partial(create_show_list,master)
+    Button(master,text="Show",command=create_show_window_action_with_arg).place(x=207,y=145)
+    
     master.mainloop()
 
 main = MainGUI
