@@ -4,41 +4,41 @@ import os.path
 class JsonHandler:
     def __init__(self):
         pass
-
-    def add_sheets(self, id_saerch, sheet):
-        self.id_saerch=id_saerch
-        self.sheet=sheet
-        with open('customer_list.json') as f:
+    
+    def open_search(self,id_search):
+        with open("customer_list.json")as f:
             data=json.load(f)
-            if id_saerch in data:
-                with open('customer_list.json', 'w') as f:
-                    data[id_saerch]['supply']=data[id_saerch]['supply'] + sheet
-                    f.write(json.dumps(data))                  
-                return True
-            else:
+            if id_search in data:
+                return data        
+            else: 
                 return False
 
-    def sub_sheets(self,id_saerch,sheet):
-        self.id_saerch=id_saerch
+    def add_sheets(self,list_dic, id_search,sheet):
         self.sheet=sheet
-        with open('customer_list.json') as f:
-            data=json.load(f)
-            if (id_saerch in data) and (data[id_saerch]['supply'] > sheet):
-                with open('customer_list.json', 'w') as f:
-                    data[id_saerch]['supply']=data[id_saerch]['supply'] - sheet
-                    f.write(json.dumps(data))
-                return True
-            else:
-                return False
+        self.id_search=id_search
+        with open('customer_list.json','w')as f:
+            list_dic[id_search]['supply']=list_dic[id_search]['supply'] + sheet
+            f.write(json.dumps(list_dic))               
+
+    def sub_sheets(self,list_dic,id_search,sheet):
+        self.id_search=id_search
+        self.sheet=sheet
+        if list_dic[id_search]['supply'] > sheet:
+            with open('customer_list.json', 'w') as f:
+                list_dic[id_search]['supply']=list_dic[id_search]['supply'] - sheet
+                f.write(json.dumps(list_dic))
+            return True
+        else:
+            return False
             
                 
-    def withdraw(self,id_saerch):
-        self.id_saerch=id_saerch
+    def withdraw(self,list_dic,id_search):
+        self.id_search=id_search
         with open('customer_list.json') as f:
             data=json.load(f)
-            if id_saerch in data:
+            if id_search in data:
                 with open('customer_list.json','w') as f:
-                    data.pop(id_saerch)
+                    del data[id_search]
                     f.write(json.dumps(data))
                 return True
             else:
@@ -46,7 +46,7 @@ class JsonHandler:
 
 
     def add(self, dictionary):
-        if not os.path.isfile('customer_list.json'):
+        if not os.path.isfile('customer_list.json'): 
             with open('customer_list.json', 'w')as f:
                 f.write(json.dumps(dictionary))
         else:
@@ -55,4 +55,6 @@ class JsonHandler:
             feeds.update(dictionary)
             with open('customer_list.json', 'w') as f:
                 f.write(json.dumps(feeds))
+            
+
             
